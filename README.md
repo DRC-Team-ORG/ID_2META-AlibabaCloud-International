@@ -10,13 +10,14 @@
 ---
 
 ## 2. 项目结构
+''
 /
 ├── index.html # 前端页面
 ├── api/
 │ └── verify.py # 后端 API（FastAPI）
 ├── requirements.txt # Python 依赖
 └── vercel.json # Vercel 部署配置
-
+''
 
 ---
 
