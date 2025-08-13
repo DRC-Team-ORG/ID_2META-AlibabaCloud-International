@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>梦幻筑界 · ID_2META 实名验证</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root{ --bg:#f6f8fb; --muted:#6b7280; }
+    body{background:var(--bg);}
+    .brand{font-weight:800; letter-spacing:.5px}
+    .sub{color:var(--muted)}
+    .card-neo{border:0; border-radius:20px; box-shadow:0 10px 30px rgba(28,39,60,.07);}
+    .mono{font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;}
+    .result-card{border-radius:16px}
+    .tip{font-size:.9rem;color:var(--muted)}
+    .input-hint{font-size:.85rem;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <div class="text-center mb-4">
+      <div class="brand fs-3">梦幻筑界 · ID_2META 实名验证</div>
+      <div class="sub">仅以 <span class="mono">bizCode</span> 判定结果；<span class="mono">code=Success</span> 仅表示请求成功</div>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-lg-7 col-md-9">
+        <div class="card card-neo p-4">
+          <form id="verifyForm" class="needs-validation" novalidate>
+            <div class="mb-3">
+              <label class="form-label">姓名</label>
+              <input class="form-control" id="name" placeholder="例如：张三" required autocomplete="off">
+              <div class="invalid-feedback">请输入姓名</div>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">身份证号</label>
+              <!-- 文本输入；JS 过滤/大写/校验；限制最大18位 -->
+              <input class="form-control" id="idNumber" placeholder="15或18位中国大陆居民身份证号"
+                     required autocomplete="off" autocapitalize="characters"
+                     spellcheck="false" maxlength="18">
+              <div class="invalid-feedback">请输入有效的身份证号码</div>
+            </div>
+            <div class="input-hint mb-3">
+              提示：示例 <span class="mono">411***********0001</span>，仅用于展示。请填写真实数据进行校验。
+            </div>
+
+            <button id="submitBtn" class="btn btn-primary w-100" type="submit">
+              <span class="btn-text"><i class="bi bi-shield-check me-1"></i>提交阿里云验证</span>
+              <span class="btn-loading d-none"><span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>验证中…</span>
+            </button>
+          </form>
+
+          <div id="resultWrap" class="mt-4 d-none">
+            <div id="resultCard" class="result-card p-3 border"></div>
+
+            <div class="d-flex gap-2 mt-2">
+              <button id="copyReqId" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-clipboard"></i> 复制 RequestId
+              </button>
+              <button id="copyRaw" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-braces"></i> 复制原始响应
+              </button>
+            </div>
+
+            <details class="mt-3">
+              <summary class="sub">查看原始响应</summary>
+              <pre id="raw" class="mono small mt-2 mb-0"></pre>
+            </details>
+          </div>
+        </div>
+
+        <div class="card card-neo mt-4">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-2">
+              <i class="bi bi-shield-lock text-primary fs-4 me-2"></i>
+              <h5 class="mb-0">合规与隐私说明</h5>
+            </div>
+            <div class="tip mb-3">我们只把用户输入转发至有权的实名验证服务机构获取校验结果，不在本系统中留存任何个人信息。</div>
+
+            <div class="accordion" id="policyAcc">
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="p0">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c0">
+                    法律依据与安全措施
+                  </button>
+                </h2>
+                <div id="c0" class="accordion-collapse collapse" data-bs-parent="#policyAcc">
+                  <div class="accordion-body">
+                    <p class="mb-2">
+                      根据《网络安全法》第二十一条、《数据安全法》第二十七条及《个人信息保护法》第十三条规定，作为实名验证服务提供方，我们需依法采取以下措施：
+                    </p>
+                    <ul class="mb-2">
+                      <li><strong>数据存储（如需）</strong>：实名信息采用国家密码局认证的 <strong>SM2（256位密钥）</strong> 加密存储，以满足《网络安全法》第二十四条实名制要求。</li>
+                      <li><strong>密码信息</strong>：通过 <strong>Bcrypt</strong> 算法加密（16字符盐值），不可逆。</li>
+                    </ul>
+                    <p class="mb-0">
+                      我们按照最佳实践仅对接有权进行验证的服务机构进行核验并返回结果，<strong>本系统不保存任何实名信息</strong>。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tip mt-3">
+              计费说明：<span class="mono">bizCode=1/2</span> 为计费，<span class="mono">3</span> 为不计费（以服务商计费为准）。
+            </div>
+          </div>
+        </div>
+
+        <p class="text-center tip mt-3 mb-0">
+          © DREAM REALM CONSTRUCTION 梦幻筑界版权所有 · 仅用于开发测试
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // —— 身份证预校验（增强版）——
+    const WEIGHTS = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+    const PARITY  = ['1','0','X','9','8','7','6','5','4','3','2'];
+
+    function validDateYYYYMMDD(s){
+      if (!/^\d{8}$/.test(s)) return false;
+      const y = +s.slice(0,4), m = +s.slice(4,6), d = +s.slice(6,8);
+      const dt = new Date(y, m-1, d);
+      return dt.getFullYear()===y && dt.getMonth()===m-1 && dt.getDate()===d && y>=1900 && y<=2099;
+    }
+    function validDateYYMMDD(s){
+      if (!/^\d{6}$/.test(s)) return false;
+      const y = +s.slice(0,2), m = +s.slice(2,4), d = +s.slice(4,6);
+      const year = 1900 + y; // 15位为19xx年代
+      const dt = new Date(year, m-1, d);
+      return dt.getFullYear()===year && dt.getMonth()===m-1 && dt.getDate()===d && year>=1900 && year<=2099;
+    }
+    function checksum18(id17){
+      let sum = 0;
+      for (let i=0;i<17;i++) sum += Number(id17[i]) * WEIGHTS[i];
+      return PARITY[sum % 11];
+    }
+    // 15位 -> 18位（补'19'后按18位计算校验码）
+    function to18From15(id15){
+      const addr = id15.slice(0,6);
+      const birthYYMMDD = id15.slice(6,12);
+      const seq = id15.slice(12,15);
+      const birth = '19' + birthYYMMDD;
+      const base17 = addr + birth + seq;
+      const check = checksum18(base17);
+      return base17 + check;
+    }
+
+    /**
+     * 返回 { ok, reason?, normalized18? }
+     * reason 可能值：format | addr | seq | date | checksum | checksum15to18
+     */
+    function validateID(idRaw){
+      const id = idRaw.trim().toUpperCase();
+      if(!/^(\d{15}|\d{17}[\dX])$/.test(id)) return { ok:false, reason:'format' };
+
+      if (id.length === 18){
+        const addr = id.slice(0,6);
+        const seq  = id.slice(14,17);
+        if (addr === '000000') return { ok:false, reason:'addr' };
+        if (seq === '000')     return { ok:false, reason:'seq' };
+
+        const birthday = id.slice(6,14);
+        if (!validDateYYYYMMDD(birthday)) return { ok:false, reason:'date' };
+
+        const expected = checksum18(id.slice(0,17));
+        if (expected !== id[17]) return { ok:false, reason:'checksum' };
+        return { ok:true };
+      } else {
+        // 15位
+        const addr = id.slice(0,6);
+        const seq  = id.slice(12,15);
+        if (addr === '000000') return { ok:false, reason:'addr' };
+        if (seq === '000')     return { ok:false, reason:'seq' };
+
+        const birthYYMMDD = id.slice(6,12);
+        if (!validDateYYMMDD(birthYYMMDD)) return { ok:false, reason:'date' };
+
+        const id18 = to18From15(id);
+        const expected = checksum18(id18.slice(0,17));
+        if (expected !== id18[17]) return { ok:false, reason:'checksum15to18' };
+        return { ok:true, normalized18: id18 };
+      }
+    }
+
+    // —— 状态映射（保持原逻辑）——
+    const MAP = {
+      "match":     { badge: "一致",    color: "success",   icon: "bi-check-circle-fill",     desc: "姓名与身份证号一致（计费）。" },
+      "mismatch":  { badge: "不一致",  color: "danger",    icon: "bi-x-circle-fill",         desc: "姓名与身份证号不一致（计费）。" },
+      "not_found": { badge: "无记录",  color: "secondary", icon: "bi-dash-circle-fill",      desc: "未找到权威记录（不计费）。" },
+      "unknown":   { badge: "未知",    color: "warning",   icon: "bi-exclamation-circle-fill", desc: "返回未识别的状态，请展开查看原始响应。" }
+    };
+    function normalizeStatus(data){
+      if (data && typeof data.status === "string") return data.status;
+      const biz = data && (data.bizCode ?? data?.result?.bizCode);
+      const b = String(biz || "");
+      if (b === "1") return "match";
+      if (b === "2") return "mismatch";
+      if (b === "3") return "not_found";
+      return "unknown";
+    }
+
+    // —— 输入：仅允许 0-9 与（必要时）末位 X；自动转大写；并清空错误状态 —— 
+    const idEl = document.getElementById('idNumber');
+    idEl.addEventListener('input', (e) => {
+      // 先保留数字和X，统一大写
+      let v = e.target.value.toUpperCase().replace(/[^0-9X]/g, '');
+
+      // 强制长度 ≤ 18
+      if (v.length > 18) v = v.slice(0, 18);
+
+      // 当长度 ≤ 17 时，不允许出现 X（避免用户困惑）
+      if (v.length <= 17) {
+        v = v.replace(/X/g, '');
+      } else if (v.length === 18) {
+        // 仅末位可为 X，前 17 位移除所有 X
+        v = v.slice(0,17).replace(/X/g,'') + (v[17] === 'X' ? 'X' : v[17]);
+      }
+      if (v !== e.target.value) e.target.value = v;
+      idEl.setCustomValidity('');
+    });
+
+    function renderResult(data){
+      const wrap = document.getElementById("resultWrap");
+      const card = document.getElementById("resultCard");
+      const raw  = document.getElementById("raw");
+      wrap.classList.remove("d-none");
+      raw.textContent = JSON.stringify(data, null, 2);
+
+      const status = normalizeStatus(data);
+      const m = MAP[status] || MAP["unknown"];
+      const reqId = data.requestId || "-";
+      const code  = data.code || "-";
+      const msg   = data.message || "-";
+      const biz   = (data.bizCode ?? data?.result?.bizCode ?? "-");
+
+      card.className = `result-card p-3 border border-${m.color} bg-white`;
+      card.innerHTML = `
+        <div class="d-flex align-items-center">
+          <i class="bi ${m.icon} text-${m.color} fs-3 me-2"></i>
+          <div>
+            <div class="fw-semibold">核验状态：<span class="badge bg-${m.color}">${m.badge}</span></div>
+            <div class="text-muted small mt-1">${m.desc}</div>
+          </div>
+        </div>
+        <hr class="my-3">
+        <div class="row g-2 small">
+          <div class="col-12"><span class="text-muted">RequestId：</span><span id="reqIdVal" class="mono">${reqId}</span></div>
+          <div class="col-6"><span class="text-muted">Code：</span><span class="mono">${code}</span></div>
+          <div class="col-6"><span class="text-muted">Message：</span><span class="mono">${msg}</span></div>
+          <div class="col-12"><span class="text-muted">BizCode：</span><span class="mono">${biz}</span></div>
+          <div class="col-12"><span class="text-muted">Status：</span><span class="mono">${status}</span></div>
+        </div>
+      `;
+    }
+
+    async function copyText(text){ try{ await navigator.clipboard.writeText(text); return true; }catch{ return false; } }
+    document.getElementById("copyReqId").addEventListener("click", async () => {
+      const t = document.getElementById("reqIdVal")?.innerText || "";
+      const ok = await copyText(t);
+      const btn = document.getElementById("copyReqId");
+      btn.innerHTML = ok ? '<i class="bi bi-check2"></i> 已复制' : '<i class="bi bi-clipboard-x"></i> 复制失败';
+      setTimeout(()=>btn.innerHTML='<i class="bi bi-clipboard"></i> 复制 RequestId',1500);
+    });
+    document.getElementById("copyRaw").addEventListener("click", async () => {
+      const t = document.getElementById("raw")?.innerText || "";
+      const ok = await copyText(t);
+      const btn = document.getElementById("copyRaw");
+      btn.innerHTML = ok ? '<i class="bi bi-check2"></i> 已复制' : '<i class="bi bi-clipboard-x"></i> 复制失败';
+      setTimeout(()=>btn.innerHTML='<i class="bi bi-braces"></i> 复制原始响应',1500);
+    });
+
+    document.getElementById("verifyForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.currentTarget;
+
+      // 重置校验提示，避免残留
+      form.classList.remove("was-validated");
+      idEl.setCustomValidity('');
+
+      // 仅校验必填
+      if(!form.checkValidity()){
+        form.classList.add("was-validated");
+        return;
+      }
+      const idRaw = idEl.value;
+      const v = validateID(idRaw);
+      if (!v.ok){
+        form.classList.add("was-validated");
+        const fb = document.querySelector("#idNumber + .invalid-feedback");
+        fb.textContent =
+          (v.reason==='checksum' || v.reason==='checksum15to18') ? "身份证校验码不正确" :
+          (v.reason==='date')     ? "身份证出生日期无效" :
+          (v.reason==='addr')     ? "身份证地址码无效" :
+          (v.reason==='seq')      ? "身份证顺序码无效" :
+          "身份证格式不正确";
+        idEl.setCustomValidity("invalid");
+        idEl.reportValidity();
+        return;
+      }
+
+      const btn = document.getElementById("submitBtn");
+      btn.disabled = true;
+      btn.querySelector(".btn-text").classList.add("d-none");
+      btn.querySelector(".btn-loading").classList.remove("d-none");
+
+      try {
+        const payload = {
+          name: document.getElementById("name").value.trim(),
+          idNumber: idRaw.trim().toUpperCase()
+          // 如需把15位的“标准化18位”一并提交，可与后端约定增加字段：
+          // ...(v.normalized18 ? { idNumber18: v.normalized18 } : {})
+        };
+        const resp = await fetch("/api/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" /*,"Authorization":"Bearer 你的token"*/ },
+          body: JSON.stringify(payload)
+        });
+        let data;
+        try { data = await resp.json(); } catch { data = { code:"Error", message:"响应解析失败", status:"unknown" }; }
+        if (!resp.ok) throw new Error(data?.error || "请求失败");
+        renderResult(data);
+      } catch (err){
+        renderResult({ code: "Error", message: String(err), status: "unknown" });
+      } finally {
+        btn.disabled = false;
+        btn.querySelector(".btn-text").classList.remove("d-none");
+        btn.querySelector(".btn-loading").classList.add("d-none");
+      }
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

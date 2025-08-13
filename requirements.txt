@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+alibabacloud_cloudauth_intl20220809
+alibabacloud_tea_openapi
+alibabacloud_tea_util
