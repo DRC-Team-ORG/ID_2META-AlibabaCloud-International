@@ -34,7 +34,7 @@
 - 原始响应折叠查看与复制
 
 **调用方式：**
-```javascript
+javascript
 fetch("/api/verify", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
@@ -85,3 +85,30 @@ API_TOKEN变量请注意在前端代码的320行填写为自己的变量值，�
 本项目可直接在 Vercel 部署，实现前后端一体化的无服务器运行。
 
 https://vercel.com
+
+Copyright (c) 2025 DREAM REALM CONSTRUCTION TEAM - 梦幻筑界  
+All rights reserved.  
+
+Permission is hereby granted, free of charge, to any person obtaining a copy  
+of this software and associated documentation files (the "Software"), to use  
+the Software for personal, non-commercial purposes only.  
+
+Commercial use, modification, distribution, or sublicensing of the Software  
+is strictly prohibited without prior written permission from the copyright holder.  
+
+本软件及相关文档版权归 DREAM REALM CONSTRUCTION TEAM - 梦幻筑界 所有。  
+仅限个人、非商业用途，禁止任何未经授权的商业使用、修改、再分发或转授权。  
+
+**Disclaimer / 免责声明**  
+The Software is provided "as is", without warranty of any kind, express or implied,  
+including but not limited to the warranties of merchantability, fitness for a particular  
+purpose, and noninfringement. In no event shall the authors or copyright holders be  
+liable for any claim, damages, or other liability, whether in an action of contract,  
+tort, or otherwise, arising from, out of, or in connection with the Software or the use  
+or other dealings in the Software.  
+
+本软件按“原样”提供，不提供任何明示或暗示的保证，包括但不限于对适销性、  
+特定用途适用性及非侵权性的保证。作者或版权持有人在任何情况下均不对因本软件  
+或其使用、其他交易而引起的任何索赔、损害或其他责任负责，无论其基于合同、  
+侵权行为或其他原因。  
+
